@@ -1,0 +1,132 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.16/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body>
+
+    @{
+        string role = "";
+        try
+        {
+            role = Context.Request.Cookies["role"];
+            if(role == null)
+            {
+                role = "";
+            }
+        }
+        catch (Exception e)
+        {
+        }
+    }
+    <nav class="px-5 bg-gray-900 py-4">
+        <div class="container mx-auto flex items-center justify-between">
+            <div class="text-white text-2xl font-semibold">
+                <a href="/">5sFashion</a>
+            </div>
+            <ul class="flex space-x-6">
+                @if (role.ToLower().Contains("admin"))
+                {
+                    <li><a href="/admin/products" class="text-white hover:text-blue-500">Sản phẩm</a></li>
+                    <li><a href="/admin/statistic" class="text-white hover:text-blue-500">Thống kê</a></li>
+                    if(true) {
+                        var username = Context.Request.Cookies["username"];
+                        <li> <a href="#" class="cursor-pointer text-white">Xin chào, @username</a></li>
+                    }
+                    <li> <a href="/authentication/logout" class="cursor-pointer text-white">Đăng xuât</a></li>
+                }
+                else
+                {
+                    <li class="group relative">
+                        <a href="/" class="text-white hover:text-blue-500">Trang chủ</a>
+                    </li>
+                    <li class="group relative">
+                        <a href="/products/list?page=1" class="text-white hover:text-blue-500">Sản phẩm</a>
+                        <ul class="absolute left-0 mt-2 space-y-2 bg-white text-black hidden group-hover:block">
+                            <li><a href="/products/shirts" class="block px-4 py-2">Áo thun</a></li>
+                            <li><a href="/products/jeans" class="block px-4 py-2">Jean</a></li>
+                        </ul>
+                    </li>
+                    <li><a href="/store" class="text-white hover:text-blue-500">Hệ thống cửa hàng</a></li>
+                    <li><a href="/news" class="text-white hover:text-blue-500">Tin tức</a></li>
+
+                    @if(true){
+                        var username = Context.Request.Cookies["username"];
+                        if (string.IsNullOrEmpty(username))
+                        {
+                            <li><a href="/authentication/login" class="cursor-pointer text-white">Đăng nhập</a></li>
+                        }
+                        else
+                        {
+                            var quantityCart = Context.Request.Cookies["quantity_cart"];
+                            <li class="text-white">
+                                <a href="/cart/my-products">
+                                    <i class="fa fa-cart-plus" aria-hidden="true"></i>
+                                    <span class="ml-1 bg-red-500 rounded-full px-2">@(quantityCart ?? "0")</span>
+                                </a>
+                            </li>
+                            <li> <a href="#" class="cursor-pointer text-white">Xin chào, @username</a></li>
+                            <li> <a href="/authentication/logout" class="cursor-pointer text-white">Đăng xuât</a></li>
+                        }
+                    }
+                }
+            </ul>
+        </div>
+    </nav>
+
+    <!-- The Modal -->
+    <div class="modal" id="myModal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+
+                <!-- Modal Header -->
+                <div class="modal-header">
+                    <h2 class="modal-title">Đăng nhập</h2>
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                </div>
+
+                <!-- Modal body -->
+                <div class="max-w-md mx-auto mt-10">
+                    <form method="post" action="/authentication/login" class="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
+                        <div class="mb-4">
+                            <label class="block text-gray-700 text-sm font-bold mb-2" for="username">
+                                Tên đăng nhập
+                            </label>
+                            <input name="Email" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="username" type="text" placeholder="Email">
+                        </div>
+                        <div class="mb-6">
+                            <label class="block text-gray-700 text-sm font-bold mb-2" for="password">
+                                Mật khẩu
+                            </label>
+                            <input name="Password" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" id="password" type="password" placeholder="Mật khẩu">
+                        </div>
+                        @if (ViewBag.Login == "failed")
+                        {
+                            <p class="text-red">Email hoặc mật khẩu không chính xác!</p>
+                        }
+                        <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded w-full focus:outline-none focus:shadow-outline" type="button">
+                            Đăng nhập
+                        </button>
+                    </form>
+                    <div class="text-center mb-4">
+                        <p class="text-gray-500 text-sm">Hoặc đăng nhập bằng</p>
+                        <button class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded w-full focus:outline-none focus:shadow-outline" type="button">
+                            Google
+                        </button>
+                    </div>
+                    <p class="text-sm text-gray-600 text-right">
+                        Bạn chưa có tài khoản? <a href="#" class="text-blue-600 hover:text-blue-800">Đăng ký</a>
+                    </p>
+                </div>
+
+                <!-- Modal footer -->
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

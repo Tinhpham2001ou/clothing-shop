@@ -1,0 +1,69 @@
+﻿@model IEnumerable<ClothingShop.WEB.Models.Product>
+
+@{
+    Layout = "_Layout";
+}
+
+@Html.Partial("~/Views/Shared/menu.cshtml")
+
+@{
+    ViewData["Title"] = "Administrator";
+}
+<div class="mx-2 my-5">
+    <h1 class="text-2xl font-semibold mb-4">Quản lý sản phẩm</h1>
+
+    <p class="my-3">
+        <a href="/admin/products/create" class="bg-green-500 text-white px-4 py-2 rounded-lg"><i class="fa fa-plus" aria-hidden="true"></i> Tạo</a>
+    </p>
+</div>
+<table class="border-collapse border border-gray-300">
+    <thead>
+        <tr>
+            <th class="p-3 border border-gray-300">Tên</th>
+            <th class="p-3 border border-gray-300">Loại</th>
+            <th class="p-3 border border-gray-300">Hãng</th>
+            <th class="p-3 border border-gray-300">Mô tả</th>
+            <th class="p-3 border border-gray-300">Giá</th>
+            <th class="p-3 border border-gray-300">Giá cũ</th>
+            <th class="p-3 border border-gray-300">Còn</th>
+            <th class="p-3 border border-gray-300">Đã bán</th>
+            <th class="p-3 border border-gray-300">Ngày</th>
+            <th class="p-3 border border-gray-300">Trạng thái</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr class="bg-gray-100 cursor-pointer hover:bg-gray-300" data-url="@("/admin/products/" + item.Id.ToString())">
+                        <td class="p-3 border border-gray-300">@Html.DisplayFor(modelItem => item.ProductName)</td>
+                        <td class="p-3 border border-gray-300">@Html.DisplayFor(modelItem => item.Category.CategoryName)</td>
+                        <td class="p-3 border border-gray-300">@Html.DisplayFor(modelItem => item.Trademark.Name)</td>
+                        <td class="p-3 border border-gray-300">@Html.DisplayFor(modelItem => item.Description)</td>
+                        <td class="p-3 border border-gray-300">@Html.DisplayFor(modelItem => item.Price)</td>
+                        <td class="p-3 border border-gray-300">@Html.DisplayFor(modelItem => item.OldPrice)</td>
+                        <td class="p-3 border border-gray-300">@Html.DisplayFor(modelItem => item.TotalStockQuantity)</td>
+                        <td class="p-3 border border-gray-300">@Html.DisplayFor(modelItem => item.QuantitySold)</td>
+                        <td class="p-3 border border-gray-300">@Html.DisplayFor(modelItem => item.DateCreated)</td>
+                        <td class="p-3 border border-gray-300">@(item.IsActive == true ? "Đang bán" : "Ngưng bán")</td>
+                </tr>  
+        }
+    </tbody>
+</table>
+
+<script>
+    // Lấy tất cả các hàng trong bảng
+    var tableRows = document.querySelectorAll("tr[data-url]");
+
+    // Lặp qua từng hàng và thêm xử lý sự kiện click
+    tableRows.forEach(function (row) {
+        row.addEventListener("click", function () {
+            // Lấy URL từ thuộc tính data-url
+            var url = row.getAttribute("data-url");
+
+            // Chuyển hướng đến URL
+            window.location.href = url;
+        });
+    });
+</script>
+
+

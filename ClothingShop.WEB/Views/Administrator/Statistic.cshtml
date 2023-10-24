@@ -1,0 +1,47 @@
+﻿@{
+	Layout = "_Layout";
+}
+
+@Html.Partial("~/Views/Shared/menu.cshtml")
+
+@{
+	ViewData["Title"] = "Thống kê";
+}
+<div id="chartContainer" style="height: 370px; width: 100%;" class="mt-10"></div>
+<script src="https://cdn.canvasjs.com/canvasjs.min.js"> </script>
+<script>
+	window.onload = function () {
+		var dataPointsFetch = [];
+		fetch("/admin/statistic/data")
+			.then((res) => res.json())
+			.then((data) => {
+				for (var i = 0; i < data.length; i++) {
+					dataPointsFetch.push({ y: data[i].totalMoney, label: data[i].productName });
+				}
+
+				var chart = new CanvasJS.Chart("chartContainer", {
+					animationEnabled: true,
+
+					title: {
+						text: "Thống kê doanh thu theo sản phẩm"
+					},
+					axisX: {
+						interval: 1
+					},
+					axisY2: {
+						interlacedColor: "rgba(1,77,101,.2)",
+						gridColor: "rgba(1,77,101,.1)",
+						title: " "
+					},
+					data: [{
+						type: "bar",
+						name: "companies",
+						axisYType: "secondary",
+						color: "#014D65",
+						dataPoints: dataPointsFetch
+					}]
+				});
+				chart.render();
+			});
+	}
+</script>

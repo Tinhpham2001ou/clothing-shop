@@ -1,0 +1,197 @@
+﻿@model ClothingShop.WEB.Models.Product
+@{
+    Layout = "_Layout";
+}
+
+@Html.Partial("~/Views/Shared/menu.cshtml")
+
+@{
+    ViewData["Title"] = "Admin";
+}
+
+<h1 class="mx-10 my-10 text-2xl font-semibold mb-4">Quản lý sản phẩm</h1>
+<div class="text-right mt-1 mr-10 mb-2 text-white">
+    <button class="bg-red-500 hover:bg-red-700 text-white font-bold py-1 px-2 shadow-md border border-red-900"
+            onclick="deleteProduct('@Model.Id')">
+        <i class="fa fa-minus" aria-hidden="true"></i></i> Xóa
+    </button>
+</div>
+<div class="p-4 border rounded-lg mx-10">
+    <h4 class="text-lg font-semibold">Product</h4>
+    <hr class="my-2 border-gray-300" />
+    <form  class="grid grid-cols-2 gap-4">
+        <div class="col-span-2">
+            <input asp-for="Id" type="hidden" />
+        </div>
+        <div class="col-span-2 sm:col-span-1">
+            <label class="block font-semibold">Tên sản phẩm:</label>
+            <input id="prod-name" asp-for="ProductName" value="@(Model.ProductName)" class="w-full px-3 py-2 border border-gray-300 rounded-lg" />
+        </div>
+        <div class="col-span-2 sm:col-span-1">
+            <label class="block font-semibold">Loại:</label>
+            <select id="category" class="w-full px-3 py-2 border border-gray-300 rounded-lg">
+                @foreach (var category in ViewBag.Categories)
+                {
+                    <option value="@category.Id" @(category.Id == Model.CategoryId ? "selected" : "")>@category.CategoryName</option>
+                }
+            </select>
+        </div>
+        <div class="col-span-2 sm:col-span-1">
+            <label class="block font-semibold">Nơi sản xuất:</label>
+            <select id="trademark" class="w-full px-3 py-2 border border-gray-300 rounded-lg">
+                @foreach (var m in ViewBag.Trademarks)
+                {
+                    <option value="@m.Id" @(m.Id == Model.TrademarkId ? "selected" : "")>@m.Name</option>
+                }
+            </select>
+        </div>
+        <div class="col-span-2 sm:col-span-1">
+            <label class="block font-semibold">Mô tả:</label>
+            <textarea id="description" asp-for="Description" class="w-full px-3 py-2 border border-gray-300 rounded-lg">@Model.Description</textarea>
+        </div>
+        <div class="col-span-2 sm:col-span-1">
+            <label class="block font-semibold">Giá đã giảm:</label>
+            <input id="price" type="number" asp-for="Price" value="@(Model.Price)" class="w-full px-3 py-2 border border-gray-300 rounded-lg" />
+        </div>
+        <div class="col-span-2 sm:col-span-1">
+            <label class="block font-semibold">Giá cũ:</label>
+            <input id="oldPrice" type="number" asp-for="OldPrice" value="@(Model.OldPrice)" class="w-full px-3 py-2 border border-gray-300 rounded-lg" />
+        </div>
+        <div class="col-span-2 sm:col-span-1">
+            <label class="block font-semibold">Tổng hàng còn trong kho:</label>
+            <input id="totalStockQuantity" asp-for="TotalStockQuantity" value="@(Model.TotalStockQuantity)" class="w-full px-3 py-2 border border-gray-300 rounded-lg" />
+        </div>
+        <div class="col-span-2 sm:col-span-1">
+            <label class="block font-semibold">Đã bán</label>
+            <input id="quantitySold" asp-for="QuantitySold" value="@(Model.QuantitySold)" class="w-full px-3 py-2 border border-gray-300 rounded-lg" readonly />
+        </div>
+        <div class="col-span-2 sm:col-span-1">
+            <label class="block font-semibold">Date Created</label>
+            <input readonly asp-for="DateCreated" value="@(Model.DateCreated)" class="w-full px-3 py-2 border border-gray-300 rounded-lg" />
+        </div>
+        <div class="col-span-2 sm:col-span-1">
+            <label class="block font-semibold">Is Active</label>
+            <select id="isActive" class="w-full px-3 py-2 border border-gray-300 rounded-lg">
+                <option value="true" @((bool)Model.IsActive ? "selected" : "")>Đang bán</option>
+                <option value="false" @((bool)Model.IsActive == false ? "selected" : "")>Ngưng bán</option>
+            </select>
+        </div>
+        <div class="col-span-2">
+            <button type="button" class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600" 
+            onclick="update('@Model.Id')">Cập nhật</button>
+        </div>
+    </form>
+</div>
+
+<script>
+    function update(id) {
+        var prodName = document.getElementById("prod-name").value;
+        var category = document.getElementById("category").value;
+        var trademark = document.getElementById("trademark").value;
+        var description = document.getElementById("description").value;
+        var price = document.getElementById("price").value;
+        var oldPrice = document.getElementById("oldPrice").value;
+        var totalStockQuantity = document.getElementById("totalStockQuantity").value;
+        var quantitySold = document.getElementById("quantitySold").value;
+        var isActive = document.getElementById("isActive").value;
+
+        if (prodName.trim().length == 0) {
+            Swal.fire('Lỗi', "Vui lòng nhập tên!", 'error');
+            return;
+        }
+        if (description.trim().length == 0) {
+            Swal.fire('Lỗi', "Vui lòng thêm mô tả!", 'error');
+            return;
+        }
+        if (price <= 1000) {
+            Swal.fire('Lỗi', "Vui lòng kiểm tra lại giá!", 'error');
+            return;
+        }
+        var data = {
+            ProdName: prodName,
+            CategoryId: category,
+            TrademarkId: trademark,
+            Description: description,
+            Price: price,
+            OldPrice: oldPrice,
+            TotalStockQuantity: 1,
+            QuantitySold: 1,
+            IsActive: isActive == "true" ? true : false,
+        };
+        console.log(data)
+
+        fetch('/admin/products/' + id, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data),
+        })
+        .then(function (response) {
+            if (!response.ok) {
+                throw new Error('Có lỗi xảy ra.');
+            }
+            return response.json();
+        })
+        .then(function (responseData) {
+            if (responseData) {
+                    Swal.fire({
+                        title: 'Cập nhật thành công',
+                        icon: 'success',
+                        confirmButtonText: 'OK',
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            location.reload();
+                        }
+                    });
+            }
+        })
+        .catch(function (error) {
+            Swal.fire('Error', "Vui lòng thử lại sau!", 'error');
+        });
+    }
+
+    function deleteProduct(id){
+        Swal.fire({
+            title: 'Bạn có chắc muốn xóa hàng này không?',
+            text: 'Thao tác này sẽ không thể hoàn tác!',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Có',
+            cancelButtonText: 'Hủy'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                fetch('/admin/products/' + id, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                })
+                    .then(function (response) {
+                        if (!response.ok) {
+                            throw new Error('Có lỗi xảy ra.');
+                        }
+                        return response.json();
+                    })
+                    .then(function (responseData) {
+                        if (responseData) {
+                            Swal.fire({
+                                title: 'Đã xóa thành công',
+                                icon: 'success',
+                                confirmButtonText: 'OK',
+                            }).then((result) => {
+                                if (result.isConfirmed) {
+                                    location.reload();
+                                }
+                            });
+                        }
+                    })
+                    .catch(function (error) {
+                        Swal.fire('Error', "Vui lòng quay lại sau!", 'error');
+                    });
+            }
+        })
+    }
+</script>

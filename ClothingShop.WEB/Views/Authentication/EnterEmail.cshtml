@@ -1,0 +1,26 @@
+﻿@{
+    Layout = "_Layout";
+}
+
+@{
+    ViewBag.Title = "Xác nhận";
+}
+<form method="post" action="/authentication/forgot-password/email">
+    <div class="bg-gray-200 h-screen flex justify-center items-center" >
+        <div class="bg-white p-8 rounded shadow-md">
+            <h2 class="text-2xl font-semibold mb-4">Xác nhận tài khoản</h2>
+            <p class="text-gray-600 mb-4">Vui lòng nhập email của bạn:</p>
+            @if (ViewBag.EmailNotExist != null && ViewBag.EmailNotExist)
+            {
+                <span asp-validation-for="Password" class="text-danger">Email không tồn tại!</span>
+            }
+            <div class="flex justify-center space-x-4">
+                <input type="email" name="email" class="px-1 text-2xl border rounded focus:outline-none focus:border-blue-400" required>
+            </div>
+            <button type="submit" class="bg-gray-900 text-white hover:bg-blue-600 font-semibold mt-4 px-4 py-2 rounded focus:outline-none">Xác nhận</button>
+            </div>
+    </div>
+</form>
+
+
+@Html.Partial("~/Views/Shared/footer.cshtml")

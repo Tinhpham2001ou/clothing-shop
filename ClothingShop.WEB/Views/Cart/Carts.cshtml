@@ -1,0 +1,362 @@
+﻿@model IEnumerable<ClothingShop.WEB.DTOs.Responses.Cart>
+
+@{
+    Layout = "_Layout";
+}
+
+@Html.Partial("~/Views/Shared/menu.cshtml")
+
+@{
+    ViewData["Title"] = "Giỏ hàng";
+}
+
+<div class="container mx-auto p-4">
+    <h1 class="text-2xl font-bold mb-4">Giỏ hàng của bạn</h1>
+    @if (Model.Count() != 0)
+    {
+        <div class="bg-white shadow-md rounded-lg overflow-hidden">
+            <table class="w-full">
+                <thead>
+                    <tr class="bg-gray-200">
+                        <th class="py-2 px-4">Hình ảnh</th>
+                        <th class="py-2 px-4">Tên sản phẩm</th>
+                        <th class="py-2 px-4">Màu sắc</th>
+                        <th class="py-2 px-4">Kích cỡ</th>
+                        <th class="py-2 px-4">Số lượng</th>
+                        <th class="py-2 px-4">Tổng tiền</th>
+                        <th class="py-2 px-4"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td class="py-2 px-4">
+                                <img src="@item.Image" alt="@item.ProductName" class="h-16 w-16 object-cover">
+                            </td>
+                            <td class="py-2 px-4">@item.ProductName</td>
+                            <td class="py-2 px-4">@item.Color</td>
+                            <td class="py-2 px-4">@item.Size</td>
+                            <td class="py-2 px-4">@item.Quantity</td>
+                            <td class="py-2 px-4">@string.Format("{0:N0}", (item.Quantity * item.Price))</td>
+                            <td class="py-2 px-4">
+                                <input type="button" class="text-red-500 hover:text-red-700" onclick="removeItemFromCart('@item.Id')" value="Xóa" />
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+            <h1 class="my-5 ml-5 text-xl text-red-500">Tổng tiền: @string.Format("{0:N0}",ViewBag.TotalMoney) VNĐ</h1>
+        </div>
+        <form id="order-form" class="mt-5">
+            <div class="bg-white p-4 rounded-lg shadow-md">
+                <h3 class="text-lg font-semibold mb-4">Thông tin người mua</h3>
+
+                <div class="mb-4">
+                    <label for="name" class="block font-medium">Tên người mua: <span style="color: red;">*</span></label>
+                    <input type="text" id="name" name="name" value=@ViewBag.UserName required
+                           class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring focus:border-blue-300">
+                </div>
+
+                <div class="mb-4">
+                    <label for="phone" class="block font-medium">Số điện thoại:<span style="color: red;">*</span></label>
+                    <input type="tel" id="phone" name="phone" value=@ViewBag.PhoneNumber required
+                           class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring focus:border-blue-300">
+                </div>
+                <div class="mb-4">
+                    <label for="phone" class="block font-medium">Địa chỉ:<span style="color: red;">*</span></label>
+                    <input type="text" id="address" name="address" value=@ViewBag.Address
+                           class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring focus:border-blue-300"
+                           placeholder="Địa chỉ">
+                    <input type="checkbox" onclick="changeAddress()" @(string.IsNullOrEmpty(ViewBag.Address) ? "checked" : "") /> Địa chỉ mới
+                </div>
+                <div id="address-change" style="display: @(string.IsNullOrEmpty(ViewBag.Address) ? "" : "none")">
+                    <div class="mb-4">
+                        <label for="city" class="block font-medium">Tỉnh/Thành phố: <span style="color: red;">*</span></label>
+                        <select id="city" name="province"
+                                class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring focus:border-blue-300"
+                                onClick="setDistricts()"
+                                onChange="changeTextAddress()">
+                        </select>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="district" class="block font-medium">Quận/Huyện:<span style="color: red;">*</span></label>
+                        <select id="district" name="district"
+                                class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring focus:border-blue-300"
+                                onClick="setWard()"
+                                onChange="changeTextAddress()">
+                            <!-- Các tùy chọn cho quận/huyện -->
+                        </select>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="new-address" class="block font-medium">Xã/Phường: <span style="color: red;">*</span></label>
+                        <input type="text" id="new-address" name="new-address" required
+                               onChange="changeTextAddress()"
+                               class="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring focus:border-blue-300">
+                    </div>
+                </div>
+
+                <div class="bg-white mb-5">
+                    <h3 class="text-lg font-semibold mb-2">Phương thức thanh toán</h3>
+                    <div class="space-y-2">
+                        <label class="flex items-center space-x-2 border p-3 rounded-lg border-gray-300">
+                            <input id="cash-payment" type="radio" name="payment" value="cash" class="form-radio" checked>
+                            <span class="font-medium">Tiền mặt</span>
+                        </label>
+
+                        <label class="flex items-center space-x-2 border p-3 rounded-lg border-gray-300">
+                            <input id="momo-payment" type="radio" name="payment" value="Momo" class="form-radio">
+                            <span class="font-medium">Momo</span>
+                        </label>
+                    </div>
+                </div>
+                <!-- Nút kích hoạt modal -->
+                <button type="button" class="my-5 btn btn-primary" data-toggle="modal" data-target="#myModal1">
+                    Xem mã Free Ship
+                </button>
+            </div>
+
+            <!-- Modal -->
+            <div class="modal fade" id="myModal1">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <!-- Header modal -->
+                        <div class="modal-header">
+                            <h4 class="modal-title">Mã giảm giá</h4>
+                            <button type="button" class="close" data-dismiss="modal">&times;</button>
+                        </div>
+
+                        <div class="modal-body">
+                            <!-- Hiển thị biểu tượng FontAwesome và mã giảm giá Free Ship -->
+                            <p><i class="fas fa-shipping-fast" style="color: green;"></i> Mã giảm giá Free Ship</p>
+
+                            <!-- Thẻ giảm giá với border và màu nền xanh nhạt -->
+                            <div class="border rounded-lg bg-blue-100 p-3 mt-2 relative">
+                                <!-- Nút tích chọn trước thẻ giảm giá -->
+                                <input type="radio" class="absolute top-2 left-2" checked>
+
+                                <!-- Mã giảm giá -->
+                                <p class="pl-8">Mã giảm giá: Tháng 10</p>
+                            </div>
+                        </div>
+
+
+
+                        <!-- Footer modal -->
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Đóng</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </form>
+       
+        <script>
+            let listCountry = {};
+            window.onload = function () {
+                fetch("https://provinces.open-api.vn/api/?depth=2")
+                    .then((res) => res.json())
+                    .then((data) => {
+                        listCountry = data;
+                        setCountry(data);
+                        setDistrictsDefault();
+                    });
+            };
+
+            const setCountry = (data) => {
+                let options = ``;
+                for (let c = 0; c < data.length; c++) {
+                    options += `<option id='${data[c].codename}' >${data[c].name}</option>`;
+                }
+                if (document.getElementById("city") != null)
+                    document.getElementById("city").insertAdjacentHTML("beforeend", options);
+            };
+
+            const setDistrictsDefault = () => {
+                $("#district option[class='flag']").remove();
+                let district = listCountry[0].districts;
+                let options = ``;
+                if (district != null)
+                    for (let i = 0; i < district.length; i++) {
+                        options += `<option class="flag">${district[i].name}</option>`;
+                    }
+                if (document.getElementById("district") != null)
+                    document
+                        .getElementById("district")
+                        .insertAdjacentHTML("beforeend", options);
+            };
+            const setDistricts = () => {
+                $("#district option[class='flag']").remove();
+                let district = getCountryDataByValue();
+                let options = ``;
+                if (district != null)
+                    for (let i = 0; i < district.length; i++) {
+                        options += `<option class="flag">${district[i].name}</option>`;
+                    }
+                document
+                    .getElementById("district")
+                    .insertAdjacentHTML("beforeend", options);
+            };
+            const setWard = () => {
+                $("#ward option[class='flag']").remove();
+                let district = getCountryDataByValue();
+                let options = ``;
+                if (district != null)
+                    for (let i = 0; i < district.length; i++) {
+                        options += `<option class="flag">${district[i].name}</option>`;
+                    }
+                document
+                    .getElementById("district")
+                    .insertAdjacentHTML("beforeend", options);
+            };
+
+            function getCountryDataByValue() {
+                for (let i = 0; i < listCountry.length; i++) {
+                    if (document.getElementById("city").value == listCountry[i].name) {
+                        return listCountry[i].districts;
+                    }
+                }
+                return null;
+            }
+        </script>
+
+        <div class="mt-4">
+            <button class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded" onclick="payment(@ViewBag.TotalMoney)">Thanh toán</button>
+        </div>
+    }
+    else
+    {
+        <h2 class="my-20 text-center font-bold">Giỏ hàng của bạn rỗng!</h2>
+    }
+</div>
+<script>
+    function removeItemFromCart(id) {
+        fetch("/cart/my-products/remove/" + id, {
+            method: "POST",
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error("Có lỗi trong quá trình thực hiện request.", response);
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data == true)
+                location.reload();
+        })
+        .catch(error => {
+            console.error("Lỗi: " + error);
+        });
+    }
+
+
+    function changeAddress(){
+        document.getElementById("address-change").style.display = "block";
+    }
+
+    function changeTextAddress(){
+        var ward = document.getElementById("new-address").value ?? "";
+        var district = document.getElementById("district").value ?? "";
+        var city = document.getElementById("city").value ?? "";
+
+        if (ward.length > 0 && district.length > 0 && city.length > 0) {
+            var address = ward + ", " + district + ", " + city;
+            document.getElementById("address").value = address;
+        }
+    }
+    function getCookie(cookieName) {
+        var name = cookieName + "=";
+        var decodedCookie = decodeURIComponent(document.cookie);
+        var cookieArray = decodedCookie.split(';');
+        for (var i = 0; i < cookieArray.length; i++) {
+            var cookie = cookieArray[i].trim();
+            if (cookie.indexOf(name) === 0) {
+                return cookie.substring(name.length, cookie.length);
+            }
+        }
+        return null;
+    }
+
+    function payment(totaMoney) {
+        if (document.getElementById("momo-payment").checked) {
+            var momoData = {
+                TotalMoney: totaMoney
+            }
+
+            fetch('/payment/momo', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(momoData),
+            })
+            .then(function (response) {
+                if (!response.ok) {
+                    throw new Error('Có lỗi xảy ra.');
+                }
+                return response.json();
+            })
+            .then(function (responseData) {
+                if(responseData)
+                        window.open(getCookie("URL"), '_blank');
+            })
+            .catch(function (error) {
+                console.log("error", error)
+            });
+        }
+        else
+            order()
+    }
+
+    function order() {
+        if (document.getElementById("address").value == null 
+        || document.getElementById("address").value.length == 0) {
+            Swal.fire('Chú ý', "Vui lòng chọn địa chỉ nhận hàng!", 'error');
+            return;
+        }
+
+        var data = {
+            Address: document.getElementById("address").value,
+            IsPaied: !document.getElementById("cash-payment").checked
+        };
+
+        fetch('/order', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data),
+        })
+        .then(function (response) {
+            if (!response.ok) {
+                throw new Error('Có lỗi xảy ra.');
+            }
+            return response.json();
+        })
+        .then(function (responseData) {
+            if (responseData) {
+                Swal.fire({
+                    title: 'Thành công',
+                    text: 'Đặt hành thành công',
+                    icon: 'success',
+                    confirmButtonText: 'OK'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        window.location.href = '/';
+                    }
+                });
+            }
+        })
+        .catch(function (error) {
+            Swal.fire('Error', "Vui lòng quay lại sau!", 'error');
+        });
+    }
+</script>
+
+@Html.Partial("~/Views/Shared/footer.cshtml")

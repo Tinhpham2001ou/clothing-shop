@@ -1,0 +1,152 @@
+﻿@model IEnumerable<ClothingShop.WEB.DTOs.Responses.HistoryModel>
+@{
+    Layout = "_Layout";
+}
+
+@Html.Partial("~/Views/Shared/menu.cshtml")
+
+@{
+    ViewData["Title"] = "Lịch sử";
+}
+
+<div class="container mx-auto p-4">
+    <h1 class="mt-5 text-xl font-bold">Đơn hàng đang giao:</h1>
+    <hr class="w-1/3 border-t-2 border-gray-400 mb-5">
+
+    @if(Model != null){
+        <div class="bg-white shadow-md rounded-lg overflow-hidden">
+            @foreach (var order in Model)
+            {
+                <div class="pl-2 mb-5  border-2">
+                    <div class="text-right mt-1 mr-1 text-white">
+                        <button class="bg-green-500 hover:bg-green-700 text-white font-bold py-1 px-2 shadow-md border border-red-900"
+                            onclick="received('@order.OrderId')">
+                            Tôi đã nhận
+                        </button>
+                    </div>
+                    <div class="my-3"><span class="text-xl text-red-500">Tổng tiền:</span> @string.Format("{0:N0}",@order.TotalMoney) VNĐ   --- Địa chỉ: @order.Address   --- <span class="bg-green-200 p-1">@order.Status</span></div>
+                    <table class="w-full">
+                <thead>
+                    <tr class="bg-gray-200">
+                        <th class="py-2 px-4">Hình ảnh</th>
+                        <th class="py-2 px-4">Tên sản phẩm</th>
+                        <th class="py-2 px-4">Màu sắc</th>
+                        <th class="py-2 px-4">Kích cỡ</th>
+                        <th class="py-2 px-4">Số lượng</th>
+                        <th class="py-2 px-4">Tổng tiền</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in order.Items)
+                    {
+                        <tr>
+                            <td class="py-2 px-4">
+                                <img src="@item.Image" alt="@item.ProductName" class="h-16 w-16 object-cover">
+                            </td>
+                            <td class="py-2 px-4">@item.ProductName</td>
+                            <td class="py-2 px-4">@item.Color</td>
+                            <td class="py-2 px-4">@item.Size</td>
+                            <td class="py-2 px-4">@item.Quantity</td>
+                            <td class="py-2 px-4">@string.Format("{0:N0}", (item.Quantity * item.Price)) VNĐ</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+                </div>
+            }
+        </div>
+    }
+    else {
+        <h2 class="my-20 text-center font-bold">Bạn không có đơn hàng nào!</h2>
+    }
+
+    <h1 class="mt-5 text-xl font-bold">Đơn hàng đã nhận:</h1>
+    <hr class="w-1/3 border-t-2 border-gray-400 mb-5">
+    @if (ViewBag.ItemsReceived.Count > 0)
+    {
+        <div class="bg-white shadow-md rounded-lg overflow-hidden">
+            @foreach (var order in ViewBag.ItemsReceived)
+            {
+                <div class="pl-2 mb-5  border-2">
+                    <div class="my-3"><span class="text-xl text-red-500">Tổng tiền:</span> @string.Format("{0:N0}",@order.TotalMoney) VNĐ   --- Địa chỉ: @order.Address   --- <span class="bg-green-200 p-1">@order.Status</span></div>
+                    <table class="w-full">
+                <thead>
+                    <tr class="bg-gray-200">
+                        <th class="py-2 px-4">Hình ảnh</th>
+                        <th class="py-2 px-4">Tên sản phẩm</th>
+                        <th class="py-2 px-4">Màu sắc</th>
+                        <th class="py-2 px-4">Kích cỡ</th>
+                        <th class="py-2 px-4">Số lượng</th>
+                        <th class="py-2 px-4">Tổng tiền</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in order.Items)
+                    {
+                        <tr>
+                            <td class="py-2 px-4">
+                                <img src="@item.Image" alt="@item.ProductName" class="h-16 w-16 object-cover">
+                            </td>
+                            <td class="py-2 px-4">@item.ProductName</td>
+                            <td class="py-2 px-4">@item.Color</td>
+                            <td class="py-2 px-4">@item.Size</td>
+                            <td class="py-2 px-4">@item.Quantity</td>
+                            <td class="py-2 px-4">@string.Format("{0:N0}", (item.Quantity * item.Price)) VNĐ</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+                </div>
+            }
+        </div>
+    }
+    else {
+        <h2 class="my-20 text-center font-bold">Bạn không có đơn hàng nào!</h2>
+    }
+
+</div>
+
+<script>
+    function received(itemId) {
+        Swal.fire({
+            title: 'Bạn có chắc đã nhận được hàng không?',
+            text: 'Thao tác này sẽ không thể hoàn tác!',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Có',
+            cancelButtonText: 'Hủy'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                var data = {
+                    OrderId : itemId
+                }
+                fetch('/history/status/true', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data),
+                })
+                    .then(function (response) {
+                        if (!response.ok) {
+                            throw new Error('Có lỗi xảy ra.');
+                        }
+                        return response.json();
+                    })
+                    .then(function (responseData) {
+                        if (responseData) {
+                            location.reload();
+                        }
+                    })
+                    .catch(function (error) {
+                        Swal.fire('Error', "Vui lòng quay lại sau!", 'error');
+                    });
+            }
+        })
+
+    }
+</script>
+
+@Html.Partial("~/Views/Shared/footer.cshtml")

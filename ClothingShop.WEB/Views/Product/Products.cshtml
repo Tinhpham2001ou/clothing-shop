@@ -1,0 +1,121 @@
+﻿@model IEnumerable<ClothingShop.WEB.Models.Product>
+@{
+    Layout = "_Layout";
+}
+
+@Html.Partial("~/Views/Shared/menu.cshtml")
+
+@{
+    ViewData["Title"] = "Products";
+}
+
+@{
+    int currentPage;
+    try
+    {
+        currentPage = Int32.Parse(Context.Request.Query["page"]);
+    }
+    catch (Exception e)
+    {
+        currentPage = 1;
+    }
+}
+
+<div class="mx-20">
+    <h1 class="text-center text-5xl my-12">SẢN PHẨM</h1>
+    <div class="container mx-auto mt-4 mb-5">
+        <form asp-controller="Product" asp-action="Products" method="get" id="searchForm" class="flex justify-between items-center">
+            <div class="relative">
+                <input type="text" value="@ViewBag.Search" class="w-96 h-10 border border-gray-300 pl-3 pr-10 rounded" name="search" placeholder="Tìm kiếm sản phẩm">
+            </div>
+            <div class="flex items-center space-x-2">
+                <label for="sort" class="text-gray-600">Sắp xếp theo giá:</label>
+                <select name="sort" id="sort" class="w-32 h-10 border border-gray-300 rounded">
+                    <option value="def" @(ViewBag.Sort == "def" ? "selected" : "")>Mặc định</option>
+                    <option value="asc" @(ViewBag.Sort == "asc" ? "selected" : "")>Tăng dần</option>
+                    <option value="desc" @(ViewBag.Sort == "desc" ? "selected" : "")>Giảm dần</option>
+                </select>
+                <button class="bg-red-500 text-white hover:bg-red-600 font-semibold px-4 py-2 rounded" type="submit">Tìm kiếm</button>
+            </div>
+        </form>
+
+
+
+        </div>
+        @if (Model != null && Model.Any())
+        {
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                @foreach (var item in Model)
+                {
+                <a href="@Url.Action("ProductDetails", "Product", new { id = item.Id })">
+                    <div class="bg-white rounded-lg shadow-lg p-4 relative group cursor-pointer">
+                        <img src="@(item.Images.FirstOrDefault()?.Link ?? "~/images/default-image.jpg")" alt="@item.ProductName" class="w-full h-auto mb-2">
+                        <h2 class="text-sm font-semibold mb-2 h-12">@Html.DisplayFor(modelItem => item.ProductName)</h2>
+                        <ul class="mt-2 space-y-1">
+                            <li><span class="font-semibold h-3">Category:</span> @Html.DisplayFor(modelItem => item.Category.CategoryName)</li>
+                            <li><span class="font-semibold">Trademark:</span> @Html.DisplayFor(modelItem => item.Trademark.Name)</li>
+                            <li>
+                                <span class="text-base text-red-700">@string.Format("{0:N0}", item.Price)</span>
+                                @if (item.OldPrice.HasValue)
+                                {
+                                    <span class="ml-7 text-base text-gray-500 line-through italic">@string.Format("{0:N0}", item.OldPrice)</span>
+                                }
+                            </li>
+                        </ul>
+                        <div class="opacity-0 group-hover:opacity-100 absolute inset-0 bg-white border border-gray-300 p-4">
+                            <!-- Model nhỏ -->
+                            <p>@item.Description</p>
+                        </div>
+                    </div>
+                </a>
+                }
+            </div>
+            //paging
+        @if (Model != null && Model.Any())
+        {
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                @foreach (var item in Model)
+                {
+                    <!-- Nội dung sản phẩm -->
+                }
+            </div>
+
+            <!-- Phân trang -->
+            <div class="mt-10">
+                @if (ViewBag.PageCount > 1)
+                {
+                    <nav class="flex justify-center">
+                        <ul class="pagination">
+                            @for (int i = 1; i <= ViewBag.PageCount; i++)
+                            {
+                                <li>
+                                    <a href="javascript:void(0);" onclick="changePage(@i)" class="pagination-square @(i == currentPage ? " outline-blue-500 bg-gray-900 shadow-md text-white " : "") mx-2 p-2 bg-gray-400 hover:bg-gray-900 border border-solid border-gray-900">
+                                        @i
+                                    </a>
+                                </li>
+                            }
+                        </ul>
+                    </nav>
+                }
+            </div>
+
+        }
+
+        }
+        else
+        {
+            <p class="my-48 text-center text-gray-500">Danh sách trống!!!</p>
+        }
+
+    </div>
+</div>
+
+<script>
+    function changePage(page) {
+        var url = new URL(window.location.href);
+        url.searchParams.set("page", page);
+        window.location.href = url.toString();
+    }
+</script >
+
+@Html.Partial("~/Views/Shared/footer.cshtml")

@@ -1,0 +1,54 @@
+﻿@{
+    Layout = "_Layout";
+}
+
+<div class="mx-10 mt-5">
+    <h1>Thêm thông tin sản phẩm</h1>
+    @if (ViewBag.Success == true)
+    {
+        <div class="alert alert-success">
+            Thành công!
+        </div>
+    }
+    @if (ViewBag.Success == false)
+    {
+        <div class="p-4 mb-4 text-sm text-red-800 rounded-lg bg-red-50">
+            Vui lòng kiểm tra lại!
+        </div>
+    }
+
+    <form method="post" action="/admin/products/create/detail" enctype="multipart/form-data">
+        <div class="mb-4">
+            <label for="size" class="block text-sm font-medium text-gray-700">Kích Cỡ <span style="color: red;">*</span></label>
+            <select id="size" asp-for="SizeId" name="size" class="block w-full p-2 border border-gray-300 rounded-lg">
+                @foreach (var s in ViewBag.Sizes)
+                {
+                    <option value="@s.Id">@s.Name</option>
+                }
+            </select>
+        </div>
+
+        <div class="mb-4">
+            <label for="color" class="block text-sm font-medium text-gray-700">Màu Sắc <span style="color: red;">*</span></label>
+            <select id="color" asp-for="ColorId" name="color" class="block w-full p-2 border border-gray-300 rounded-lg">
+                @foreach (var s in ViewBag.Colors)
+                {
+                    <option value="@s.Id">@s.Name</option>
+                }
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="quantity">Số lượng: <span style="color: red;">*</span></label>
+            <input type="number" id="quantity" name="quantity" class="form-control" required minlength="6">
+        </div>
+
+        <div class="mb-4">
+            <label for="image" class="block text-sm font-medium text-gray-700">Ảnh</label>
+            <input type="file" asp-for="File" id="image" name="image" class="block w-full p-2 border border-gray-300 rounded-lg">
+        </div>
+        <div class="flex">
+            <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-lg">Lưu và tiếp túc</button>
+            <button type="button" class="ml-10 bg-red-500 text-white px-4 py-2 rounded-lg"><a href="/admin/products">Thoát</a></button>
+        </div>
+    </form>
+</div>

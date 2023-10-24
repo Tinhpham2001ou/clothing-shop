@@ -1,1 +1,1 @@
-# clothing-shop
+# ClothingShop

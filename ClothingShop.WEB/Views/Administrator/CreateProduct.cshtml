@@ -1,0 +1,131 @@
+﻿@model ClothingShop.WEB.Models.Product
+@{
+    Layout = "_Layout";
+}
+
+@Html.Partial("~/Views/Shared/menu.cshtml")
+
+@{
+    ViewData["Title"] = "Admin";
+}
+
+<h1 class="mx-10 my-10 text-2xl font-semibold mb-4">Thêm sản phẩm</h1>
+
+<div class="p-4 border rounded-lg mx-10">
+    <h4 class="text-lg font-semibold">Product</h4>
+    <hr class="my-2 border-gray-300" />
+    <form class="grid grid-cols-2 gap-4">
+        <div class="col-span-2">
+            <input asp-for="Id" type="hidden" />
+        </div>
+        <div class="col-span-2 sm:col-span-1">
+            <label class="block font-semibold">Tên sản phẩm:</label>
+            <input id="prod-name" asp-for="ProductName" class="w-full px-3 py-2 border border-gray-300 rounded-lg" />
+        </div>
+        <div class="col-span-2 sm:col-span-1">
+            <label class="block font-semibold">Loại:</label>
+            <select id="category" class="w-full px-3 py-2 border border-gray-300 rounded-lg">
+                @foreach (var category in ViewBag.Categories)
+                {
+                    <option value="@category.Id">@category.CategoryName</option>
+                }
+            </select>
+        </div>
+        <div class="col-span-2 sm:col-span-1">
+            <label class="block font-semibold">Nơi sản xuất:</label>
+            <select id="trademark" class="w-full px-3 py-2 border border-gray-300 rounded-lg">
+                @foreach (var m in ViewBag.Trademarks)
+                {
+                    <option value="@m.Id">@m.Name</option>
+                }
+            </select>
+        </div>
+        <div class="col-span-2 sm:col-span-1">
+            <label class="block font-semibold">Mô tả:</label>
+            <textarea id="description" asp-for="Description" class="w-full px-3 py-2 border border-gray-300 rounded-lg"></textarea>
+        </div>
+        <div class="col-span-2 sm:col-span-1">
+            <label class="block font-semibold">Giá đã giảm:</label>
+            <input id="price" type="number" asp-for="Price" class="w-full px-3 py-2 border border-gray-300 rounded-lg" />
+        </div>
+        <div class="col-span-2 sm:col-span-1">
+            <label class="block font-semibold">Giá cũ:</label>
+            <input id="oldPrice" type="number" asp-for="OldPrice" class="w-full px-3 py-2 border border-gray-300 rounded-lg" />
+        </div>
+        <div class="col-span-2">
+            <button type="button" class="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600"
+                    onclick="create()">
+                Tạo mới
+            </button>
+        </div>
+    </form>
+</div>
+
+<script>
+    function create() {
+        var prodName = document.getElementById("prod-name").value;
+        var category = document.getElementById("category").value;
+        var trademark = document.getElementById("trademark").value;
+        var description = document.getElementById("description").value;
+        var price = document.getElementById("price").value;
+        var oldPrice = document.getElementById("oldPrice").value;
+
+        if (prodName.trim().length == 0) {
+            Swal.fire('Lỗi', "Vui lòng nhập tên sản phẩm!", 'error');
+            return;
+        }
+        if (description.trim().length == 0) {
+            Swal.fire('Lỗi', "Vui lòng thêm mô tả!", 'error');
+            return;
+        }
+        if (price <= 1000) {
+            Swal.fire('Lỗi', "Vui lòng kiểm tra lại giá!", 'error');
+            return;
+        }
+        var data = {
+            ProdName: prodName,
+            CategoryId: category,
+            TrademarkId: trademark,
+            Description: description,
+            Price: price,
+            OldPrice: oldPrice,
+        };
+
+        fetch('/admin/products/create', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(data),
+        })
+        .then(function (response) {
+            if (!response.ok) {
+                throw new Error('Có lỗi xảy ra.');
+            }
+            return response.json();
+        })
+        .then(function (responseData) {
+            var url = "/admin/products/create/" + getCookie("product_id");
+            console.log( url)
+            if (responseData) {
+                window.location.href = url;
+            }
+        })
+        .catch(function (error) {
+            Swal.fire('Error', "Vui lòng thử lại sau!", 'error');
+        });
+
+        function getCookie(cookieName) {
+            var name = cookieName + "=";
+            var decodedCookie = decodeURIComponent(document.cookie);
+            var cookieArray = decodedCookie.split(';');
+            for (var i = 0; i < cookieArray.length; i++) {
+                var cookie = cookieArray[i].trim();
+                if (cookie.indexOf(name) === 0) {
+                    return cookie.substring(name.length, cookie.length);
+                }
+            }
+            return null;
+        }
+    }
+</script>

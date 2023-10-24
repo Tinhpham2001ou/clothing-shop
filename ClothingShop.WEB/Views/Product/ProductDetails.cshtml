@@ -1,0 +1,371 @@
+﻿@model ClothingShop.WEB.Models.Product
+
+@{
+    Layout = "_Layout";
+}
+
+@Html.Partial("~/Views/Shared/menu.cshtml")
+
+@{
+    ViewData["Title"] = "Product Details";
+}
+
+<style>
+img {
+  vertical-align: middle;
+}
+
+/* Position the image container (needed to position the left and right arrows) */
+.container {
+  position: relative;
+}
+
+/* Hide the images by default */
+.mySlides {
+  display: none;
+}
+
+/* Add a pointer when hovering over the thumbnail images */
+.cursor {
+  cursor: pointer;
+}
+
+/* Next & previous buttons */
+.prev,
+.next {
+  cursor: pointer;
+  position: absolute;
+  top: 40%;
+  width: auto;
+  padding: 16px;
+  margin-top: -50px;
+  color: white;
+  font-weight: bold;
+  font-size: 20px;
+  border-radius: 0 3px 3px 0;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* Position the "next button" to the right */
+.next {
+  right: 0;
+  border-radius: 3px 0 0 3px;
+}
+
+/* On hover, add a black background color with a little bit see-through */
+.prev:hover,
+.next:hover {
+  background-color: rgba(0, 0, 0, 0.8);
+}
+
+/* Number text (1/3 etc) */
+.numbertext {
+  color: #f2f2f2;
+  font-size: 12px;
+  padding: 8px 12px;
+  position: absolute;
+  top: 0;
+}
+
+/* Container for image text */
+.caption-container {
+  text-align: center;
+  background-color: #222;
+  padding: 2px 16px;
+  color: white;
+}
+
+.row:after {
+  content: "";
+  display: table;
+  clear: both;
+}
+
+/* Six columns side by side */
+.column {
+  float: left;
+  width: 16.66%;
+}
+
+/* Add a transparency effect for thumnbail images */
+.demo {
+  opacity: 0.6;
+}
+
+.active,
+.demo:hover {
+  opacity: 1;
+}
+</style> 
+<div class="mx-20 mt-10">
+    <div class="flex">
+        <div class="w-1/2">
+            <div class="container">
+                @foreach (var item in Model.Images)
+                {
+                    <div class="mySlides">
+                        <img src="@item.Link" style="width:100%">
+                    </div>
+                }
+
+                <a class="prev" onclick="plusSlides(-1)">❮</a>
+                <a class="next" onclick="plusSlides(1)" style="margin-right: 15px">❯</a>
+
+
+                <div class="row mt-5" style="margin-left: 0">
+                    @foreach (var item in Model.Images)
+                    {
+                        <div class="column">
+                            <img class="demo cursor" src=@item.Link style="width:100%" onclick="currentSlide(@Array.IndexOf(Model.Images.ToArray(), item) + 1)">
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+        <div class="w-1/2">
+            <h2 class="text-2xl font-bold leading-10">@Model.ProductName</h2>
+            <p class="text-xl font-semibold text-red-600"><b>@Model.Price đ</b><span class="ml-7 text-base text-gray-500 line-through italic">@string.Format("{0:N0}", Model.OldPrice)</span></p>
+            <span class="text-gray-300 text-xs">Đã bán @Model.QuantitySold</span>
+            <table>
+                <tr>
+                    <td class="italic font-bold w-1/4">Màu sắc</td>
+                    <td class="py-3 w-3/4">
+                        @foreach (var item in ViewBag.StockQuantities)
+                        {
+                            if (item.StockQuantityTotal > 0
+                                && (string.IsNullOrEmpty(ViewBag.SizeIdSelected) || ViewBag.SizeIdSelected == item.SizeId.ToString()))
+                            {
+                                <span id="@item.Color.Id" class="color-item border border-gray-300 rounded-md p-2 m-2 cursor-pointer category-item @(item.ColorId.ToString() == ViewBag.ColorIdSelected ? " bg-gray-400 " : " bg-gray-100")"
+                                      onclick="toggleColorSelection(this)">@item.Color.Name</span>
+                            }
+                            else
+                            {
+                                <span class="color-item bg-gray-100 border border-gray-300 rounded-md p-2 m-2 category-item opacity-50 cursor-not-allowed">@item.Color.Name</span>
+                            }
+                        }
+                    </td>
+                </tr>
+                <tr>
+                    <td class="italic font-bold">Kích thước</td>
+                    <td class="py-3 w-3/4">
+                        @{
+                            var sizes = new List<string> { "X", "L", "M", "XL", "XXL", "FreeSize" };
+                            foreach (var size in sizes)
+                            {
+                                var s = Model.StockQuantities.FirstOrDefault(_ => _.Size.Name == size);
+                                if (s != null
+                                    && (string.IsNullOrEmpty(ViewBag.ColorIdSelected) || ViewBag.ColorIdSelected == s.ColorId.ToString())
+                                )
+                                {
+                                                            <span id="@s.SizeId" class="size-item bg-gray-100 border border-gray-300 rounded-md p-2 m-2 cursor-pointer category-item  @(s.SizeId.ToString() == ViewBag.SizeIdSelected ? " bg-gray-400 " : " bg-gray-100")"
+                                                                    onclick="toggleSizeSelection(this)">@size</span>
+                                }
+                                else
+                                {
+                                                    <span class="size-item bg-gray-100 border border-gray-300 rounded-md p-2 m-2 category-item opacity-50 cursor-not-allowed">@size</span>
+                                }
+                            }
+                        }
+                    </td>
+                </tr>
+                <tr>
+                    <td class="italic font-bold">Số lượng</td>
+                    <td class="py-3">
+                        <div class="flex items-center">
+                            <button class="bg-blue-500 text-white py-1 px-3 rounded-l" onclick="decreaseQuantity()">-</button>
+                            <input type="text" id="quantity" class="w-16 text-center" value="@(ViewBag.Quantity ?? 1)" min="1" onchange="changeQuantity(this)">
+                            <button class="bg-blue-500 text-white py-1 px-3 rounded-r" onclick="increaseQuantity()">+</button>
+                        </div>
+                    </td>
+                </tr>
+            </table>
+            @{
+                string message = ""; 
+                if (string.IsNullOrEmpty(ViewBag.ColorIdSelected))
+                {
+                    message = "Vui lòng chọn màu!";
+                }
+                else
+                    if (string.IsNullOrEmpty(ViewBag.SizeIdSelected))
+                {
+                    message = "Vui lòng chọn size!";
+                }
+                else
+                {
+                    int? max = 0;
+                    if (Model.StockQuantities != null)
+                            max = Model.StockQuantities.Where(_ => _.SizeId.ToString() == ViewBag.SizeIdSelected
+                                                    && _.ColorId.ToString() == ViewBag.ColorIdSelected)
+                                          .FirstOrDefault().StockQuantityTotal;
+                        if (max < Int32.Parse(ViewBag.Quantity ?? "1"))
+                        {
+                            message = "Số lượng sản phầm thêm yêu cầu của bạn chỉ còn " + max + " sản phầm";
+                        }
+                    }
+
+            }
+            <button class="mt-10 bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded w-full"
+                    onclick="handleAddIntoCart('@message')">
+                Thêm vào giỏ hàng
+            </button>
+            <img src="~/images/product-detail.png" style="margin-top: 30px; width: 100%; height: 40%"/>
+        </div> 
+    </div>
+
+    <div>
+        <h2 class="mt-10 font-bold text-2xl">Mô tả sản phẩm</h2>
+        <hr style="width:30%;height: 2px; background-color: gray;">
+        <div class="mt-5">
+            @Model.Description
+        </div>
+    </div>
+</div>
+    <script>
+        let slideIndex = 1;
+        showSlides(slideIndex);
+
+        function plusSlides(n) {
+            showSlides(slideIndex += n);
+        }
+
+        function currentSlide(n) {
+            showSlides(slideIndex = n);
+        }
+
+        function showSlides(n) {
+            let i;
+            let slides = document.getElementsByClassName("mySlides");
+            let dots = document.getElementsByClassName("demo");
+            let captionText = document.getElementById("caption");
+            if (n > slides.length) { slideIndex = 1 }
+            if (n < 1) { slideIndex = slides.length }
+            for (i = 0; i < slides.length; i++) {
+                slides[i].style.display = "none";
+            }
+            for (i = 0; i < dots.length; i++) {
+                dots[i].className = dots[i].className.replace(" active", "");
+            }
+            slides[slideIndex - 1].style.display = "block";
+            dots[slideIndex - 1].className += " active";
+            captionText.innerHTML = dots[slideIndex - 1].alt;
+        }
+
+        function getCookie(cookieName) {
+            var name = cookieName + "=";
+            var decodedCookie = decodeURIComponent(document.cookie);
+            var cookieArray = decodedCookie.split(';');
+            for (var i = 0; i < cookieArray.length; i++) {
+                var cookie = cookieArray[i].trim();
+                if (cookie.indexOf(name) === 0) {
+                    return cookie.substring(name.length, cookie.length);
+                }
+            }
+            return null;  
+        }
+
+        //toggle color items
+        function toggleColorSelection(element) {
+            var colors = document.querySelectorAll(".color-item");
+            for (var i = 0; i < colors.length; i++) {
+                colors[i].style.backgroundColor = '#f9f9fa';
+                colors[i].style.border = '1px solid #e2e8f0';
+            }
+
+            if (element.id == getCookie("colorIdSelected")) {
+                document.cookie = "colorIdSelected=; path=/";
+            }
+            else {
+                // store cookie
+                document.cookie = "colorIdSelected=" + element.id + "; path=/";
+            }
+            location.reload();
+        }
+
+        //toggle size items
+        function toggleSizeSelection(element) {
+            var colors = document.querySelectorAll(".size-item");
+            for (var i = 0; i < colors.length; i++) {
+                colors[i].style.backgroundColor = '#f9f9fa';
+                colors[i].style.border = '1px solid #e2e8f0';
+            }
+            if (element.id == getCookie("sizeIdSelected")) {
+                document.cookie = "sizeIdSelected=; path=/";
+            }
+            else {
+                // store cookie
+                document.cookie = "sizeIdSelected=" + element.id + "; path=/";
+            }
+            location.reload();
+        }
+
+        function decreaseQuantity() {
+            var quantityInput = document.getElementById("quantity");
+            var currentQuantity = parseInt(quantityInput.value, 10);
+            if (currentQuantity > 1) {
+                quantityInput.value = currentQuantity - 1;
+                document.cookie = "quantity=" + (currentQuantity - 1) + "; path=/";
+                location.reload();
+            }
+        }
+
+        function increaseQuantity() {
+            var quantityInput = document.getElementById("quantity");
+            var currentQuantity = parseInt(quantityInput.value, 10);
+
+            quantityInput.value = currentQuantity + 1;
+            document.cookie = "quantity=" + (currentQuantity + 1) + "; path=/"; 
+            location.reload();
+        }
+
+    function changeQuantity(e) {
+        var currentQuantity = parseInt(e.value, 10);
+        if (currentQuantity <= 0) {
+            currentQuantity = 1;
+        }
+        e.value = currentQuantity;
+        document.cookie = "quantity=" + currentQuantity + "; path=/";
+        location.reload();
+    }
+
+    function handleAddIntoCart(message) {
+        if (!getCookie("access_token")) {
+            Swal.fire('Error', "Vui lòng đăng nhập!", 'error');
+            return;
+        }
+        
+        if (message != "")
+            Swal.fire('Error', message, 'error');
+        else {
+            var currentUrl = window.location.href;
+
+            var match = currentUrl.match(/\/products\/detail\/([^/]+)/);
+
+            if (match) {
+                var productId = match[1];
+
+                fetch("/cart/product/" + productId, {
+                    method: "POST", 
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error("Có lỗi trong quá trình thực hiện request.", response);
+                    }
+                    return response.json(); 
+                })
+                .then(data => {
+                    if (data == true)
+                        location.reload();
+                })
+                .catch(error => {
+                    console.error("Lỗi: " + error);
+                });
+            }
+        }
+    }
+    </script>
+
+@Html.Partial("~/Views/Shared/footer.cshtml")

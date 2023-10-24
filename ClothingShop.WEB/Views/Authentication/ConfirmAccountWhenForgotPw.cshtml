@@ -1,0 +1,57 @@
+﻿@{
+    Layout = "_Layout";
+}
+
+@{
+    ViewBag.Title = "Xác nhận";
+}
+
+@Html.Partial("~/Views/Shared/menu.cshtml")
+<div>
+    <form method="post" action="/authentication/confirm-account">
+        <div class="bg-gray-200 h-screen flex justify-center items-center">
+            <div class="bg-white p-8 rounded shadow-md">
+                <h2 class="text-2xl font-semibold mb-4">Xác nhận tài khoản</h2>
+                <p class="text-gray-600 mb-4">Vui lòng nhập mã xác nhận đã được gửi vào email của bạn.</p>
+                <div class="flex justify-center space-x-4">
+                    <input type="text" name="digit1" class="w-10 h-10 text-2xl text-center border rounded focus:outline-none focus:border-blue-400" maxlength="1">
+                    <input type="text" name="digit2" class="w-10 h-10 text-2xl text-center border rounded focus:outline-none focus:border-blue-400" maxlength="1">
+                    <input type="text" name="digit3" class="w-10 h-10 text-2xl text-center border rounded focus:outline-none focus:border-blue-400" maxlength="1">
+                    <input type="text" name="digit4" class="w-10 h-10 text-2xl text-center border rounded focus:outline-none focus:border-blue-400" maxlength="1">
+                    <input type="text" name="digit5" class="w-10 h-10 text-2xl text-center border rounded focus:outline-none focus:border-blue-400" maxlength="1">
+                    <input type="text" name="digit6" class="w-10 h-10 text-2xl text-center border rounded focus:outline-none focus:border-blue-400" maxlength="1">
+                </div>
+                @{
+                    if (ViewBag.InvalidCode == true)
+                    {
+                        <p class="text-red-500 italic my-1">Mã xác nhận không chính xác!</p>
+                    }
+                }
+                <button type="submit" class="bg-gray-900 text-white hover:bg-blue-600 font-semibold mt-4 px-4 py-2 rounded focus:outline-none">Xác nhận</button>
+                <a onclick="resendCode()" class="btn btn-link">Gửi lại mã</a>
+            </div>
+        </div>
+    </form>
+</div>
+<script>
+        function resendCode() {
+        fetch('/authentication/resend-code', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        })
+            .then(function (response) {
+                if (!response.ok) {
+                    throw new Error('Có lỗi xảy ra.');
+                }
+                return response.json();
+            })
+            .then(function (responseData) {
+            })
+            .catch(function (error) {
+            });
+        Swal.fire('Thành công', "Gửi mã xác nhận thành công", 'success');
+    }
+</script>
+@Html.Partial("~/Views/Shared/footer.cshtml")
